@@ -73,11 +73,15 @@ impl Solver {
                 // Addition
                 match self.complexity.get(&(a + b)) {
                     Some(&res_complexity) => {
-                        if res_complexity > complexity {
-                            self.complexity.insert(a + b, complexity);
-                            self.cache.insert(a + b, vec![Operation::Addition(a, b)]);
-                        } else if res_complexity == complexity {
-                            self.cache.get_mut(&(a + b)).unwrap().push(Operation::Addition(a, b));
+                        match res_complexity.cmp(&complexity) {
+                            std::cmp::Ordering::Greater => {
+                                self.complexity.insert(a + b, complexity);
+                                self.cache.insert(a + b, vec![Operation::Addition(a, b)]);
+                            },
+                            std::cmp::Ordering::Equal => {
+                                self.cache.get_mut(&(a + b)).unwrap().push(Operation::Addition(a, b));
+                            },
+                            _ =>()
                         }
                     },
                     None => {
@@ -90,11 +94,15 @@ impl Solver {
                 // Substraction
                 match self.complexity.get(&(a - b)) {
                     Some(&res_complexity) => {
-                        if res_complexity > complexity {
-                            self.complexity.insert(a - b, complexity);
-                            self.cache.insert(a - b, vec![Operation::Substraction(a, b)]);
-                        } else if res_complexity == complexity {
-                            self.cache.get_mut(&(a - b)).unwrap().push(Operation::Substraction(a, b));
+                        match res_complexity.cmp(&complexity) {
+                            std::cmp::Ordering::Greater => {
+                                self.complexity.insert(a - b, complexity);
+                                self.cache.insert(a - b, vec![Operation::Substraction(a, b)]);
+                            },
+                            std::cmp::Ordering::Equal => {
+                                self.cache.get_mut(&(a - b)).unwrap().push(Operation::Substraction(a, b));
+                            },
+                            _ =>()
                         }
                     },
                     None => {
@@ -106,11 +114,15 @@ impl Solver {
 
                 match self.complexity.get(&(b - a)) {
                     Some(&res_complexity) => {
-                        if res_complexity > complexity {
-                            self.complexity.insert(b - a, complexity);
-                            self.cache.insert(b - a, vec![Operation::Substraction(b, a)]);
-                        } else if res_complexity == complexity {
-                            self.cache.get_mut(&(b - a)).unwrap().push(Operation::Substraction(b, a));
+                        match res_complexity.cmp(&complexity) {
+                            std::cmp::Ordering::Greater => {
+                                self.complexity.insert(b - a, complexity);
+                                self.cache.insert(b - a, vec![Operation::Substraction(b, a)]);
+                            },
+                            std::cmp::Ordering::Equal => {
+                                self.cache.get_mut(&(b - a)).unwrap().push(Operation::Substraction(b, a));
+                            },
+                            _ =>()
                         }
                     },
                     None => {
@@ -123,11 +135,15 @@ impl Solver {
                 // Multiplication
                 match self.complexity.get(&(a * b)) {
                     Some(&res_complexity) => {
-                        if res_complexity > complexity {
-                            self.complexity.insert(a * b, complexity);
-                            self.cache.insert(a * b, vec![Operation::Multiplication(a, b)]);
-                        } else if res_complexity == complexity {
-                            self.cache.get_mut(&(a * b)).unwrap().push(Operation::Multiplication(a, b));
+                        match res_complexity.cmp(&complexity) {
+                            std::cmp::Ordering::Greater => {
+                                self.complexity.insert(a * b, complexity);
+                                self.cache.insert(a + b, vec![Operation::Multiplication(a, b)]);
+                            },
+                            std::cmp::Ordering::Equal => {
+                                self.cache.get_mut(&(a * b)).unwrap().push(Operation::Multiplication(a, b));
+                            },
+                            _ =>()
                         }
                     },
                     None => {
