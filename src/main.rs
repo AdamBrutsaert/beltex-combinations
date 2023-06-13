@@ -1,16 +1,23 @@
-use beltex::{Solver};
+use beltex::Solver;
 use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[arg(required = true,
-        help = "The value for which the combinations must be found")]
+    #[arg(
+        required = true,
+        help = "The value for which the combinations must be found"
+    )]
     target: i32,
 
-    #[arg(short, long, value_delimiter = ',', default_value = "1,2,3,4,5,6,7,8,9",
-        help = "The base numbers to use")]
-    base: Vec<i32>
+    #[arg(
+        short,
+        long,
+        value_delimiter = ',',
+        default_value = "1,2,3,4,5,6,7,8,9",
+        help = "The base numbers to use"
+    )]
+    base: Vec<i32>,
 }
 
 fn main() {

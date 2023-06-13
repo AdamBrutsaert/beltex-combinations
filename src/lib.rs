@@ -1,13 +1,13 @@
-use std::collections::HashMap;
 use itertools::Itertools;
 use std::cmp::max;
+use std::collections::HashMap;
 
 #[derive(Copy, Clone, Debug)]
 pub enum Operation {
     Addition(i32, i32),
     Substraction(i32, i32),
     Multiplication(i32, i32),
-    Identity(i32)
+    Identity(i32),
 }
 
 impl Operation {
@@ -16,31 +16,42 @@ impl Operation {
             Operation::Addition(_, _) => '+',
             Operation::Substraction(_, _) => '-',
             Operation::Multiplication(_, _) => '*',
-            Operation::Identity(_) => ' '
+            Operation::Identity(_) => ' ',
         }
     }
 }
 
 struct CacheData {
     complexity: u32,
-    operations: Vec<Operation>
+    operations: Vec<Operation>,
 }
 
 pub struct Solver {
     cache: HashMap<i32, CacheData>,
     inputs: Vec<i32>,
-    previous_inputs_length: usize
+    previous_inputs_length: usize,
 }
 
 impl Solver {
     pub fn new(base: &[i32]) -> Solver {
         let inputs = base.to_vec();
-        let cache = inputs.iter().map(|&x| (x, CacheData{complexity: 0, operations: vec![Operation::Identity(x)]})).collect();
+        let cache = inputs
+            .iter()
+            .map(|&x| {
+                (
+                    x,
+                    CacheData {
+                        complexity: 0,
+                        operations: vec![Operation::Identity(x)],
+                    },
+                )
+            })
+            .collect();
 
         Solver {
             cache,
             inputs,
-            previous_inputs_length: 0
+            previous_inputs_length: 0,
         }
     }
 
@@ -49,20 +60,26 @@ impl Solver {
     }
 
     pub fn get_lisp(&self, value: i32) -> Vec<String> {
-        if let Some(data) = self.cache.get(&value) {
-            data.operations.iter().flat_map(|operation| {
-                match operation {
-                    Operation::Identity(value) => vec![value.to_string()],
-                    Operation::Addition(left, right) | Operation::Substraction(left, right) | Operation::Multiplication(left, right) => {
-                        self.get_lisp(*left).iter().cartesian_product(self.get_lisp(*right).iter()).map(|(x, y)| {
-                            format!("({} {} {})", x, operation.symbol(), y)
-                        }).collect()
-                    }
-                }
-            }).collect()
-        } else {
-            vec![]
-        }
+        self.cache
+            .get(&value)
+            .unwrap_or(&CacheData {
+                complexity: 0,
+                operations: vec![],
+            })
+            .operations
+            .iter()
+            .flat_map(|operation| match operation {
+                Operation::Identity(value) => vec![value.to_string()],
+                Operation::Addition(left, right)
+                | Operation::Substraction(left, right)
+                | Operation::Multiplication(left, right) => self
+                    .get_lisp(*left)
+                    .iter()
+                    .cartesian_product(self.get_lisp(*right).iter())
+                    .map(|(x, y)| format!("({} {} {})", x, operation.symbol(), y))
+                    .collect(),
+            })
+            .collect()
     }
 
     pub fn iterate(&mut self) {
@@ -74,26 +91,30 @@ impl Solver {
                 let b = self.inputs[j];
                 let complexity = self.cache[&a].complexity + self.cache[&b].complexity + 1;
 
-                for (result, operation) in [(a + b, Operation::Addition(a, b)),
-                                            (a - b, Operation::Substraction(a, b)),
-                                            (b - a, Operation::Substraction(b, a)),
-                                            (a * b, Operation::Multiplication(a, b))] {
-                    self.cache.entry(result)
-                        .and_modify(|data| {
-                            match data.complexity.cmp(&complexity) {
-                                std::cmp::Ordering::Greater => {
-                                    data.complexity = complexity;
-                                    data.operations = vec![operation];
-                                },
-                                std::cmp::Ordering::Equal => {
-                                    data.operations.push(operation);
-                                },
-                                _ =>()
+                for (result, operation) in [
+                    (a + b, Operation::Addition(a, b)),
+                    (a - b, Operation::Substraction(a, b)),
+                    (b - a, Operation::Substraction(b, a)),
+                    (a * b, Operation::Multiplication(a, b)),
+                ] {
+                    self.cache
+                        .entry(result)
+                        .and_modify(|data| match data.complexity.cmp(&complexity) {
+                            std::cmp::Ordering::Greater => {
+                                data.complexity = complexity;
+                                data.operations = vec![operation];
                             }
+                            std::cmp::Ordering::Equal => {
+                                data.operations.push(operation);
+                            }
+                            _ => (),
                         })
                         .or_insert_with(|| {
                             self.inputs.push(result);
-                            CacheData{complexity, operations: vec![operation]}
+                            CacheData {
+                                complexity,
+                                operations: vec![operation],
+                            }
                         });
                 }
             }
