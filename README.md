@@ -21,3 +21,7 @@ The algorithm I made up works in iterations.
 Each iteration tries every new combinations available of numbers and store their result along with their complexity (i.e. the number of steps to get to it) into two HashMap.
 
 So if you want to get to a number, you can just iterate until a combination has been found for the number.
+
+## Acknowledgement
+
+Big thanks to @abelianvariety for the code review.
