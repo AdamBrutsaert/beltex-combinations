@@ -13,3 +13,11 @@ For example, if your base set of a number is `[1, 2, 3, 4, 5, 6]`, if you want t
 - 2 + 4 * 6
 - 5 * 6 - 4
 - 6 + 4 * 5
+
+## Algorithm
+
+The algorithm I made up works in iterations.
+
+Each iteration tries every new combinations available of numbers and store their result along with their complexity (i.e. the number of steps to get to it) into two HashMap.
+
+So if you want to get to a number, you can just iterate until a combination has been found for the number.
