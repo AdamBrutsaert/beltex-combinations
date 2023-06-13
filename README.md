@@ -2,6 +2,18 @@
 
 I wrote this code as I was playing [Beltex](https://store.steampowered.com/app/2051420/Beltex/) in order to find the right combinations to get to a number.
 
+## Usage
+
+```shell
+cargo build --release
+./target/release/beltex [--base=<base>] <target>
+```
+
+For more information :
+```shell
+./target/release/beltex --help
+```
+
 ## Problem
 
 The problem was to get to a number from a limited set of a numbers and some operations.
