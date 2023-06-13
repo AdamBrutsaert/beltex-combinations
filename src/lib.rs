@@ -37,7 +37,7 @@ impl Solver {
 
     pub fn get_lisp(&self, value: i32) -> Vec<String> {
         if let Some(operations) = self.cache.get(&value) {
-            operations.iter().map(|operation| {
+            operations.iter().flat_map(|operation| {
                 match operation {
                     Operation::Identity(value) => vec![value.to_string()],
                     Operation::Addition(left, right) => {
@@ -56,7 +56,7 @@ impl Solver {
                         }).collect()
                     }
                 }
-            }).flatten().collect()
+            }).collect()
         } else {
             vec![]
         }
