@@ -21,9 +21,13 @@ impl Operation {
     }
 }
 
+struct CacheData {
+    complexity: u32,
+    operations: Vec<Operation>
+}
+
 pub struct Solver {
-    complexity: HashMap<i32, u32>,
-    cache: HashMap<i32, Vec<Operation>>,
+    cache: HashMap<i32, CacheData>,
     inputs: Vec<i32>,
     previous_inputs_length: usize
 }
@@ -31,11 +35,9 @@ pub struct Solver {
 impl Solver {
     pub fn new(base: &[i32]) -> Solver {
         let inputs = base.to_vec();
-        let complexity = inputs.iter().map(|&x| (x, 0)).collect();
-        let cache = inputs.iter().map(|&x| (x, vec![Operation::Identity(x)])).collect();
+        let cache = inputs.iter().map(|&x| (x, CacheData{complexity: 0, operations: vec![Operation::Identity(x)]})).collect();
 
         Solver {
-            complexity,
             cache,
             inputs,
             previous_inputs_length: 0
@@ -43,12 +45,12 @@ impl Solver {
     }
 
     pub fn get(&self, value: i32) -> Option<&Vec<Operation>> {
-        self.cache.get(&value)
+        self.cache.get(&value).map(|data| &data.operations)
     }
 
     pub fn get_lisp(&self, value: i32) -> Vec<String> {
-        if let Some(operations) = self.cache.get(&value) {
-            operations.iter().flat_map(|operation| {
+        if let Some(data) = self.cache.get(&value) {
+            data.operations.iter().flat_map(|operation| {
                 match operation {
                     Operation::Identity(value) => vec![value.to_string()],
                     Operation::Addition(left, right) | Operation::Substraction(left, right) | Operation::Multiplication(left, right) => {
@@ -65,36 +67,34 @@ impl Solver {
 
     pub fn iterate(&mut self) {
         let length = self.inputs.len();
+
         for i in 0..length {
             for j in max(self.previous_inputs_length, i)..length {
                 let a = self.inputs[i];
                 let b = self.inputs[j];
-                let complexity = self.complexity[&a] + self.complexity[&b] + 1;
-
+                let complexity = self.cache[&a].complexity + self.cache[&b].complexity + 1;
 
                 for (result, operation) in [(a + b, Operation::Addition(a, b)),
                                             (a - b, Operation::Substraction(a, b)),
                                             (b - a, Operation::Substraction(b, a)),
                                             (a * b, Operation::Multiplication(a, b))] {
-                    match self.complexity.get(&result) {
-                        Some(&res_complexity) => {
-                            match res_complexity.cmp(&complexity) {
+                    self.cache.entry(result)
+                        .and_modify(|data| {
+                            match data.complexity.cmp(&complexity) {
                                 std::cmp::Ordering::Greater => {
-                                    self.complexity.insert(result, complexity);
-                                    self.cache.insert(result, vec![operation]);
+                                    data.complexity = complexity;
+                                    data.operations = vec![operation];
                                 },
                                 std::cmp::Ordering::Equal => {
-                                    self.cache.get_mut(&result).unwrap().push(operation);
+                                    data.operations.push(operation);
                                 },
                                 _ =>()
                             }
-                        },
-                        None => {
-                            self.complexity.insert(result, complexity);
-                            self.cache.insert(result, vec![Operation::Addition(a, b)]);
-                            self.inputs.push(result)
-                        }
-                    }
+                        })
+                        .or_insert_with(|| {
+                            self.inputs.push(result);
+                            CacheData{complexity, operations: vec![operation]}
+                        });
                 }
             }
         }
