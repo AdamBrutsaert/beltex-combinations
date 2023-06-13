@@ -141,4 +141,10 @@ impl Solver {
 
         self.previous_inputs_length = length;
     }
+
+    pub fn iterate_until_get(&mut self, value: i32) {
+        while !self.cache.contains_key(&value) {
+            self.iterate();
+        }
+    }
 }
