@@ -92,30 +92,35 @@ impl Solver {
                 let complexity = self.cache[&a].complexity + self.cache[&b].complexity + 1;
 
                 for (result, operation) in [
-                    (a + b, Operation::Addition(a, b)),
-                    (a - b, Operation::Substraction(a, b)),
-                    (b - a, Operation::Substraction(b, a)),
-                    (a * b, Operation::Multiplication(a, b)),
+                    (a.checked_add(b), Operation::Addition(a, b)),
+                    (a.checked_sub(b), Operation::Substraction(a, b)),
+                    (b.checked_sub(a), Operation::Substraction(b, a)),
+                    (a.checked_mul(b), Operation::Multiplication(a, b)),
                 ] {
-                    self.cache
-                        .entry(result)
-                        .and_modify(|data| match data.complexity.cmp(&complexity) {
-                            std::cmp::Ordering::Greater => {
-                                data.complexity = complexity;
-                                data.operations = vec![operation];
-                            }
-                            std::cmp::Ordering::Equal => {
-                                data.operations.push(operation);
-                            }
-                            _ => (),
-                        })
-                        .or_insert_with(|| {
-                            self.inputs.push(result);
-                            CacheData {
-                                complexity,
-                                operations: vec![operation],
-                            }
-                        });
+                    match result {
+                        Some(result) => {
+                            self.cache
+                                .entry(result)
+                                .and_modify(|data| match data.complexity.cmp(&complexity) {
+                                    std::cmp::Ordering::Greater => {
+                                        data.complexity = complexity;
+                                        data.operations = vec![operation];
+                                    }
+                                    std::cmp::Ordering::Equal => {
+                                        data.operations.push(operation);
+                                    }
+                                    _ => (),
+                                })
+                                .or_insert_with(|| {
+                                    self.inputs.push(result);
+                                    CacheData {
+                                        complexity,
+                                        operations: vec![operation],
+                                    }
+                                });
+                        }
+                        None => continue,
+                    }
                 }
             }
         }
