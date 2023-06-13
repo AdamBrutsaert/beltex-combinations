@@ -10,6 +10,17 @@ pub enum Operation {
     Identity(i32)
 }
 
+impl Operation {
+    fn symbol(&self) -> char {
+        match self {
+            Operation::Addition(_, _) => '+',
+            Operation::Substraction(_, _) => '-',
+            Operation::Multiplication(_, _) => '*',
+            Operation::Identity(_) => ' '
+        }
+    }
+}
+
 pub struct Solver {
     complexity: HashMap<i32, u32>,
     cache: HashMap<i32, Vec<Operation>>,
@@ -40,19 +51,9 @@ impl Solver {
             operations.iter().flat_map(|operation| {
                 match operation {
                     Operation::Identity(value) => vec![value.to_string()],
-                    Operation::Addition(left, right) => {
+                    Operation::Addition(left, right) | Operation::Substraction(left, right) | Operation::Multiplication(left, right) => {
                         self.get_lisp(*left).iter().cartesian_product(self.get_lisp(*right).iter()).map(|(x, y)| {
-                            format!("({} + {})", x, y)
-                        }).collect()
-                    },
-                    Operation::Substraction(left, right) => {
-                        self.get_lisp(*left).iter().cartesian_product(self.get_lisp(*right).iter()).map(|(x, y)| {
-                            format!("({} - {})", x, y)
-                        }).collect()
-                    },
-                    Operation::Multiplication(left, right) => {
-                        self.get_lisp(*left).iter().cartesian_product(self.get_lisp(*right).iter()).map(|(x, y)| {
-                            format!("({} * {})", x, y)
+                            format!("({} {} {})", x, operation.symbol(), y)
                         }).collect()
                     }
                 }
