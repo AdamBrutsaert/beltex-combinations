@@ -1,25 +1,24 @@
 use beltex::{Solver};
-use clap::{Command, Arg};
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    #[arg(required = true,
+        help = "The value for which the combinations must be found")]
+    target: i32,
+
+    #[arg(short, long, value_delimiter = ',', default_value = "1,2,3,4,5,6,7,8,9",
+        help = "The base numbers to use")]
+    base: Vec<i32>
+}
 
 fn main() {
-    let matches = Command::new("")
-        .version("1.0")
-        .author("Adam Brutsaert <brutsaertadam@yahoo.fr>")
-        .about("A project made in Rust that searches each and every possible way to get to a number in the least amount of steps with certains constraints.")
-        .arg(Arg::new("base")
-            .short('b')
-            .long("base")
-            .value_delimiter(',')
-            .default_value("1,2,3,4,5,6,7,8,9"))
-        .arg(Arg::new("target").required(true))
-        .get_matches();
+    let args = Args::parse();
+    let mut solver = Solver::new(args.base.as_slice());
 
-    let base = matches.get_many::<String>("base").unwrap().map(|v| v.parse().unwrap()).collect::<Vec<i32>>();
-    let target = matches.get_one::<String>("target").unwrap().parse::<i32>().unwrap();
-
-    let mut solver = Solver::new(base.as_slice());
-    solver.iterate_until_get(target);
-    for lisp in solver.get_lisp(target) {
-        println!("{target} = {lisp}");
+    solver.iterate_until_get(args.target);
+    for lisp in solver.get_lisp(args.target) {
+        println!("{} = {lisp}", args.target);
     }
 }
